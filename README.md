@@ -1,4 +1,3 @@
-# LAB_5
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +6,7 @@ class BST<K extends Comparable<K>, V> {
     private class Nodo {
         K clave;
         V valor;
-        Nodo izquierdo, de
+        Nodo izquierdo, derecha;
         public Nodo(K clave, V valor) {
             this.clave = clave;
             this.valor = valor;
@@ -21,7 +20,7 @@ class BST<K extends Comparable<K>, V> {
         if (nodo == null) return new Nodo(clave, valor);
         int cmp = clave.compareTo(nodo.clave);
         if (cmp < 0) nodo.izquierdo = insertar(nodo.izquierdo, clave, valor);
-        else if (cmp > 0) nodo.derecho = insertar(nodo.derecho, clave, valor);
+        else if (cmp > 0) nodo.derecha = insertar(nodo.derecha, clave, valor);
         else nodo.valor = valor;
         return nodo;
     }
@@ -32,7 +31,7 @@ class BST<K extends Comparable<K>, V> {
         if (nodo == null) return null;
         int cmp = clave.compareTo(nodo.clave);
         if (cmp < 0) return obtener(nodo.izquierdo, clave);
-        else if (cmp > 0) return obtener(nodo.derecho, clave);
+        else if (cmp > 0) return obtener(nodo.derecha, clave);
         else return nodo.valor;
     }
     public List<K> claves() {
@@ -44,7 +43,7 @@ class BST<K extends Comparable<K>, V> {
         if (nodo == null) return;
         inorden(nodo.izquierdo, claves);
         claves.add(nodo.clave);
-        inorden(nodo.derecho, claves);
+        inorden(nodo.derecha, claves);
     }
 }
 
@@ -100,6 +99,15 @@ class HashST<K, V> {
     public int tamaño() {
         return tamaño;
     }
+    public List<K> obtenerTodosNombres() {
+        List<K> nombres = new ArrayList<>();
+        for (List<Nodo> lista : tabla) {
+            for (Nodo nodo : lista) {
+                nombres.add(nodo.clave);
+            }
+        }
+        return nombres;
+    }
 }
 
 class Jugador {
@@ -121,6 +129,10 @@ class Jugador {
     public int get_victorias() { return victorias; }
     public int get_empates() { return empates; }
     public int get_derrotas() { return derrotas; }
+    public String toString() {
+        return String.format("%s: %d victorias, %d empates, %d derrotas (%.1f%% de victorias)", 
+                             nombre_jugador, victorias, empates, derrotas, tasa_victorias()*100);
+    }
 }
 
 class Conecta_Cuatro {
@@ -264,6 +276,14 @@ class Marcador {
         }
         return resultado.toArray(new Jugador[0]);
     }
+    public void mostrar_marcador() {
+        System.out.println("--- MARCADOR ---");
+        for (String nombre : jugadores.obtenerTodosNombres()) {
+            Jugador jugador = jugadores.obtener(nombre);
+            System.out.println(jugador);
+        }
+        System.out.println("---------------");
+    }
 }
 
 class Partida {
@@ -309,25 +329,31 @@ class Partida {
 
 public class Main {
     public static void main(String[] args) {
-        Marcador marcador = new Marcador();
-        marcador.registrar_jugador("Jugador_1");
-        marcador.registrar_jugador("Jugador_2");
         Scanner scanner = new Scanner(System.in);
+        System.out.print("Ingrese nombre del Jugador 1: ");
+        String nombre1 = scanner.nextLine();
+        System.out.print("Ingrese nombre del Jugador 2: ");
+        String nombre2 = scanner.nextLine();
+        Marcador marcador = new Marcador();
+        marcador.registrar_jugador(nombre1);
+        marcador.registrar_jugador(nombre2);
         boolean jugando = true;
         while (jugando) {
-            Partida partida = new Partida("Jugador_1", "Jugador_2");
-            System.out.println("Nueva partida: Jugador_1 (X) vs Jugador_2 (O)");
+            Partida partida = new Partida(nombre1, nombre2);
+            System.out.println("Nueva partida: " + nombre1 + " (X) vs " + nombre2 + " (O)");
             String ganador = partida.jugar();
             if (ganador.isEmpty()) {
                 System.out.println("¡Empate!");
-                marcador.agregar_resultado("Jugador_1", "Jugador_2", true);
+                marcador.agregar_resultado(nombre1, nombre2, true);
             } else {
                 System.out.println("¡Ganador: " + ganador + "!");
-                String perdedor = ganador.equals("Jugador_1") ? "Jugador_2" : "Jugador_1";
+                String perdedor = ganador.equals(nombre1) ? nombre2 : nombre1;
                 marcador.agregar_resultado(ganador, perdedor, false);
             }
+            marcador.mostrar_marcador();
             System.out.print("¿Jugar otra partida? (s/n): ");
             jugando = scanner.next().equalsIgnoreCase("s");
+            scanner.nextLine(); 
         }
         System.out.println("¡Gracias por jugar!");
         scanner.close();
